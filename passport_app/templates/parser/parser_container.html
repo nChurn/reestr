@@ -1,0 +1,59 @@
+<div class="col-10" id="manage_parser_parameters">
+    <form>
+        {% csrf_token %}
+
+        <div class="form-group row">
+            <div class="col">
+                <input class="form-control" type="text" name="form_name" id="form_name" />
+            </div>
+            <button class="btn btn-light"><i class="fa fa-search"></i></i></button>
+            <a class="btn btn-success pull-right button-orange m-1" id="btn-add"><i class="fa fa-plus"></i></a>
+        </div>
+    </form>
+
+    {% for item in parser_types %}
+    {% include 'parser/partial_parser_type_list.html' with parser_type=item %}
+    {% endfor %}
+
+</div>
+{% include 'parser/partial_modal_add.html' %}
+{% include 'parser/partial_modal_parser_parameter_add.html' %}
+{% block javascript %}
+<script>
+    $(document).ready(function () {
+        $('#manage_parser_parameters').find('#btn-add').on('click', function (event) {
+            $('#parser-type-modal').modal('show');
+        });
+
+        $('#manage_parser_parameters').find('.btn-light').on('click', function(event){
+            // alert('yes');
+            SearchParserTypesList();
+        });
+        function SearchParserTypesList() {
+
+            text_ = document.getElementById('parser_name').value;
+            alert(text_);
+            obj = { 'input_str': text_ };
+            $.ajax({
+                url: "parser_container/", //"form_view_list/", // the endpoint
+                data: obj,
+                type: "GET", // http method request
+
+                // handle a successful response
+                success: function (data) {
+                    //$('#div-form-list-table').html(data);
+                    $('#v-pills-parser-parameters').html(data);
+                    localStorage.setItem('parser', data);
+                    localStorage.setItem('parser_name', text_);
+                },
+
+                // handle a non-successful response
+                error: function (xhr, errmsg, err) {
+                    alert(errmsg);
+                }
+            });
+
+        }
+    });
+</script>
+{% endblock %}

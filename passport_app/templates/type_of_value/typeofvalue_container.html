@@ -1,0 +1,73 @@
+<div class="col-10" id="manage_type_of_value">
+        <form>
+                {% csrf_token %}
+        
+                <div class="form-group row">
+                    <div class="col">
+                        <input class="form-control" type="text" name="form_name" id="form_name"/>
+                    </div>
+                    <button class="btn btn-light"><i class="fa fa-search"></i></i></button>
+                    <a class="btn btn-success pull-right button-orange m-1"  id="btn-add"><i class="fa fa-plus"></i></a>
+                </div>
+        </form>
+    
+    <table class="table ">
+        <thead>
+        <tr>
+            <th style="width: 5%"></th>
+            <th style="width: 5%"></th>
+            <th style="width: 20%">Название(en)</th>
+            <th style="width: 25%">Название(ру)</th>         
+        </tr>
+        </thead>
+        <tbody>
+
+        {% for item in type_of_values %}
+        {% include 'type_of_value/partial_table_item.html' with type_of_value=item %}
+        {% endfor %}
+
+        </tbody>
+    </table>
+</div>
+{% include 'type_of_value/partial_modal_add.html' %}
+
+{% block javascript %}
+<script>
+    $(document).ready(function() {
+        $('#manage_type_of_value').find('#btn-add').on('click', function (event) {
+
+            $('#type_of_value-modal').modal('show');
+        });
+        //Обработчик кнопки поиска
+        $('#manage_type_of_value').find('.btn-light').on('click', function (event) {
+
+            SearchTypeList();
+        });
+        function SearchTypeList() {
+            text_ = document.getElementById('typeofvalue_name').value;
+            obj = { 'input_str': text_ };
+            $.ajax({
+                url: "typeofvalue_container/", //"form_view_list/", // the endpoint
+                data: obj,
+                type: "GET", // http method request
+
+                // handle a successful response
+                success: function (data) {
+                    //$('#div-form-list-table').html(data);
+                    $('#v-pills-typeofvalue').html(data);
+                    localStorage.setItem('typeofvalue', data);
+                    localStorage.setItem('typeofvalue_name', text_);
+                },
+
+                // handle a non-successful response
+                error: function (xhr, errmsg, err) {
+                    alert(errmsg);
+                    alert(err);
+                    alert(xhr);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
+

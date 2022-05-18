@@ -1,0 +1,228 @@
+<input type="hidden" id="copy-category-id">
+<input type="hidden" id="copy-category-name">
+
+<div class="col-10" id="manage-category">
+    <form>
+        {% csrf_token %}
+
+        <!-- <div class="form-group row">
+            <div class="col">
+                <input class="form-control" type="text" name="form_name" id="form_name" />
+            </div>
+            <button class="btn btn-light"><i class="fa fa-search"></i></i></button>
+            <a class="btn btn-success pull-right m-1 button-orange" id="btn-new">
+                <i class="fa fa-plus"></i>
+                Создать справочник
+            </a>
+        </div> -->
+
+        <div class="form-group row">
+            <div class="col">
+                <input class="form-control" type="text" name="form_name" id="category_name_" />
+            </div>
+            <button class="btn btn-light" id="category_name" onclick="SearchCategoryList(this)"><i class="fa fa-search"></i></i></button>
+            <a class="btn btn-success pull-right m-1 button-orange" id="btn-new"><i class="fa fa-plus"></i> Создать справочник</a>
+        </div>
+    </form>
+    <div role="tablist" aria-multiselectable="true">
+        {% for category_item in categories %}
+            {% include "category/category_list_node_view.html" with category_item=category_item parent_item_id="" %}
+        {% endfor %}
+    </div>
+</div>
+
+{% include 'category/category_modal_add.html' %}
+
+<div id="copy-confirm-modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтвердите действие</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="category-paste/" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="category_copy_id">
+                <input type="hidden" name="category_id_paste_in">
+
+                <div class="modal-body">
+                    <p>
+                        Действительно копировать категорию "<span id="show-copy-category-name" class="font-italic"></span>" и всех ее потомков
+                        в категорию "<span id="show-paste-category-name" class="font-italic"></span>"?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Ок</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block javascript %}
+<script>
+    $(document).ready(function () {
+        var category_id = '{{category_item.id}}';
+        var parent_id = '{{parent_item_id}}';
+
+        $('body').on("click", '#btn-parameter-add', function (value) {
+            let id = $(this).attr('value');
+            $.ajax({
+                url: "parameters-add/" + id, 
+                type: "GET", 
+                success: function (data) {
+                    $('.modal-title').text("Парсер");
+                    $('#modal-body').html(data);
+                    $('#modal-form').modal('show');
+                },
+                error: function (xhr, errmsg, err) {
+
+                }
+            });
+        });
+
+        $('body').on("click", '#btn-category-add', function (value) {
+            let id = $(this).attr('value');
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "categories-add/" + id + "/", 
+                type: "GET", 
+                success: function (data) {
+                    $('.modal-title').text("Создать элемент");
+                    $('#modal-body').html(data);
+                    $('#modal-form').modal('show');
+                },
+                error: function (xhr, errmsg, err) {
+
+                }
+            });
+        });
+
+        $('body').on("click", '#btn-edit', function (value) {
+            let id = $(this).attr('value');
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "/category/" + id + "/", 
+                type: "GET", 
+                success: function (data) {
+                    $('.modal-title').text("Изменить элемент");
+                    $('#modal-body').html(data);
+                    $('#modal-form').modal('show');
+                },
+                error: function (xhr, errmsg, err) {
+
+                }
+            });
+        });
+
+        $('body').on("click", '#btn-remove', function (value) {
+            let id = $(this).attr('value');
+            $.ajax({
+                url: "/category/" + id + "/delete/",
+                type: "GET",
+                success: function (data) {
+                    $('#modal-body').html(data);
+                    $('#modal-title').text('');
+                    $('#modal-form').modal('show');
+                },
+                error: function (xhr, errmsg, err) {
+
+                }
+            });
+        });
+
+        $('body').on("click", '#btn-minus', function (value) {
+            let id = $(this).attr('value');
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "/constructor/categories-delete/" + parent_id + "/" + id + "/", 
+                type: "POST", 
+                success: function (data) {
+                    window.location = '/constructor/#v-pills-category';
+                },
+                error: function (xhr, errmsg, err) {
+
+                }
+            });
+
+        });
+
+        // $('body').on('shown.bs.collapse', function (e) {
+        //     $.ajax({
+        //         headers: { "X-CSRFToken": '{{csrf_token}}' },
+        //         url: "/constructor/categories/" + category_id + "/", 
+        //         type: "GET", 
+        //         success: function (data) {
+        //            // $('#child-categories-' + parent_id + '-' + category_id).html(data);
+        //         },
+        //         error: function (xhr, errmsg, err) {
+
+        //         }
+        //     });
+        // })
+    });
+</script>
+
+<script>
+    function showCategoryDetail(category_id) {
+        $.ajax({
+            url: "category/" + category_id,
+            type: "GET",
+            success: function (data) {
+                $('#category-detail').html(data);
+            },
+            error: function (xhr, errmsg, err) {
+
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $('#manage-category').find('#btn-new').on('click', function (event) {
+            $(".modal-title").text("Создать справочник")
+            $('#category-modal').modal('show');
+        });
+    });
+</script>
+
+<script>
+    function Click_(index, list_) {
+    item = GetLinkByRef(list_[index]);
+    if (item != null) {
+        item.click();
+        index++;
+        if (index < list_.length)
+            Click_(index, list_);
+    }
+}
+
+function SearchCategoryList() {
+    text_ = document.getElementById('category_name_').value;
+    alert(text_);
+    obj = { 'input_str': text_ };
+    $.ajax({
+        url: "category_container/", //"form_view_list/", // the endpoint
+        data: obj,
+        type: "GET", // http method request
+        // handle a successful response
+        success: function(data) {
+            //$('#div-form-list-table').html(data);
+            alert('yes');
+            $('#table_').html(data);
+            localStorage.setItem('category', data);
+            localStorage.setItem('category_name', text_);
+        },
+
+        // handle a non-successful response
+        error: function(xhr, errmsg, err) {
+            alert(errmsg);
+            alert(err);
+            alert(xhr);
+        }
+    });
+}     
+ </script>
+{% endblock %}

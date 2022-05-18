@@ -1,0 +1,63 @@
+<div class="accordion" id="accordion-{{category_item.category.id}}">
+    <div class="card">
+        <div class="card-header" id="card-{{category_item.category.id}}">
+            <h2 class="mb-0 button-label-color">
+                <button class="btn btn-link collapsed" style="color: #006c32;width:100%" type="button" data-toggle="collapse" 
+                    data-target="#collapse-{{category_item.category.id}}" aria-expanded="false" aria-controls="collapse-{{category_item.category.id}}"
+                    id="btn-collapse-{{category_item.category.id}}">
+                    <div class="row" style="white-space: normal important!">
+                        {% if category_item.rate_label %}
+                        <div class="col-md-5 text-left text-wrap">
+                            {% if category_item.category.point|length > 1 %}
+                                {{ category_item.category.point }}
+                            {% endif %}
+                            {{ category_item.category.name_ru }}
+                        </div>                        
+                        <div class="col-md-6 text-wrap">
+                            {{category_item.rate_label}}
+                        </div> 
+                        {% else %}
+                        <div class="col text-left text-wrap">
+                            {% if category_item.category.point|length > 1 %}
+                                {{ category_item.category.point }}
+                            {% endif %}
+                            {{ category_item.category.name_ru }}
+                        </div>                        
+                        {% endif %} 
+                        <div class="col-md-1 text-wrap">
+                            {{category_item.rate|floatformat:"-2"}}
+                        </div>
+                    </div>    
+                </button>
+            </h2>
+        </div>
+
+        <div id="collapse-{{category_item.category.id}}" class="collapse" aria-labelledby="card-{{category_item.category.id}}"
+            data-parent="#accordion-{{category_item.category.id}}__magic_text"> <!-- Without '__magic_text' it won't work -->
+            <div class="card-body">
+                {% for child_item in category_item.categories %}                    
+                    {%with category_item=child_item parent_item_id=category_item.id template_name="passport/category_node.html" %}
+                        {%include template_name%}
+                    {%endwith%}
+                {% endfor %}
+
+                {% if category_item.parameters %}
+                    <table class="table">
+                        <tr>                                    
+                            <th>Название</th>
+                            <th>Значение</th>
+                            <th>Вес</th>
+                            <th>Рейтинг</th>
+                            <th></th>
+                        </tr>
+                        {% for parameter in category_item.parameters %}
+                            {%with parameter_item=parameter template_name="passport/passport_parameter_detail.html" %}
+                                {%include template_name%}
+                            {%endwith%}
+                        {% endfor %}
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
